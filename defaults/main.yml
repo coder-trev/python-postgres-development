@@ -1,0 +1,6 @@
+---
+conda_download_url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+conda_install_dir: /usr/local/miniconda3
+python_version: 3.6
+
+docker_compose_dir: /usr/local/docker-compose

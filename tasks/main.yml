@@ -1,0 +1,53 @@
+---
+- name: Check if miniconda is installed
+  stat:
+    path: "{{ conda_install_dir }}"
+  register: conda_install_path_check
+
+- name: Setup Miniconda
+  block:
+    - name: Download Miniconda script
+      get_url:
+        url: "{{ conda_download_url }}"
+        dest: /tmp/Miniconda.sh
+        mode: 0750
+
+    - name: Install Miniconda
+      command: "/tmp/Miniconda.sh -b -p {{ conda_install_dir }}"
+
+    - name: Copy bash profile scripts
+      copy:
+        src: "{{ conda_install_dir }}/etc/profile.d/conda.sh"
+        dest: /etc/profile.d/
+        mode: preserve 
+
+    - name: Cleanup script
+      file:
+        path: /tmp/Miniconda.sh
+        state: absent
+  when: not conda_install_path_check.stat.exists
+
+- name: Create postgres python environment
+  command: "{{ conda_install_dir }}/bin/conda create -y -n postgres-{{ python_version }} python={{ python_version }} psycopg2"
+
+- name: Install docker tools
+  community.general.pacman:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - docker
+    - docker-compose
+
+- name: Create dir for compose files
+  file:
+    path: "{{ docker_compose_dir }}"
+    state: directory
+
+- name: Copy compose files
+  copy:
+    src: docker-compose-pg.yml
+    dest: "{{ docker_compose_dir}}/"
+
+- name: Pull docker images
+  command: "docker-compose -f {{ docker_compose_dir}}/docker-compose-pg.yml pull"
+...

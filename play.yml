@@ -1,0 +1,8 @@
+---
+- name: Install python postgres development environment
+  hosts: localhost
+  become: yes
+  gather_facts: no
+  roles:
+    - role: '{{ playbook_dir }}'
+...
